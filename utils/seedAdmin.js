@@ -4,22 +4,27 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const seedAdmin = async () => {
+  const adminEmail = 'admin@stackxio.com';
+  const adminPassword = 'admin123';
+
   try {
-    const adminExists = await User.findOne({ role: 'admin' });
+    let admin = await User.findOne({ email: adminEmail });
     
-    if (!adminExists) {
+    if (!admin) {
       console.log('No admin found. Creating default admin...');
-      const admin = new User({
+      admin = new User({
         username: 'admin',
-        email: 'admin@stackxio.com',
-        password: 'admin123', // This will be hashed by the User model's pre-save hook
+        email: adminEmail,
+        password: adminPassword,
         role: 'admin'
       });
-      
       await admin.save();
-      console.log('✅ Default admin created: admin@stackxio.com / admin123');
+      console.log(`✅ Default admin created: ${adminEmail} / ${adminPassword}`);
     } else {
-      console.log('✔ Admin account verified.');
+      // Force update password to ensure it's correct
+      admin.password = adminPassword;
+      await admin.save();
+      console.log(`✔ Admin account verified and password synchronized.`);
     }
   } catch (error) {
     console.error('❌ Error seeding admin:', error.message);

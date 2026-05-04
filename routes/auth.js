@@ -12,17 +12,17 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Find user by email (case-insensitive)
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      console.log(`Login failed: User not found with email ${email}`);
+      console.log(`Login attempt failed: User not found (${email})`);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Verify password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      console.log(`Login failed: Incorrect password for ${email}`);
+      console.log(`Login attempt failed: Wrong password for ${email}`);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
