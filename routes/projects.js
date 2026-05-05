@@ -43,12 +43,15 @@ router.get('/:id', async (req, res) => {
 // Add new project (Protected) - Multiple images
 router.post('/', auth, upload.array('images', 5), async (req, res) => {
   try {
-    const { title, description, techStack, liveLink, githubLink, category } = req.body;
+    const { title, description, techStack, liveLink, githubLink, category, type, videoUrl, thumbnail } = req.body;
     const images = req.files ? req.files.map(file => file.path) : [];
 
     const project = new Project({
       title,
       description,
+      type: type || 'image',
+      videoUrl: videoUrl || '',
+      thumbnail: thumbnail || '',
       images,
       techStack: typeof techStack === 'string' ? JSON.parse(techStack) : techStack,
       liveLink,
@@ -69,7 +72,7 @@ router.put('/:id', auth, upload.array('images', 5), async (req, res) => {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
-    const { title, description, techStack, liveLink, githubLink, category } = req.body;
+    const { title, description, techStack, liveLink, githubLink, category, type, videoUrl, thumbnail } = req.body;
     
     if (title) project.title = title;
     if (description) project.description = description;
@@ -77,6 +80,9 @@ router.put('/:id', auth, upload.array('images', 5), async (req, res) => {
     if (liveLink) project.liveLink = liveLink;
     if (githubLink) project.githubLink = githubLink;
     if (category) project.category = category;
+    if (type) project.type = type;
+    if (videoUrl !== undefined) project.videoUrl = videoUrl;
+    if (thumbnail !== undefined) project.thumbnail = thumbnail;
     
     if (req.files && req.files.length > 0) {
       project.images = req.files.map(file => file.path);

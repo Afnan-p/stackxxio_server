@@ -10,6 +10,19 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  type: {
+    type: String,
+    enum: ['image', 'video'],
+    default: 'image'
+  },
+  videoUrl: {
+    type: String,
+    default: ''
+  },
+  thumbnail: {
+    type: String, // Cover image for video projects
+    default: ''
+  },
   images: {
     type: [String],
     required: true,
