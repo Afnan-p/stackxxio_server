@@ -44,12 +44,14 @@ import projectRoutes from './routes/projects.js';
 import authRoutes from './routes/auth.js';
 import uploadRoutes from './routes/upload.js';
 import teamRoutes from './routes/team.js';
+import inquiryRoutes from './routes/inquiryRoutes.js';
 
 // Routes
 app.use('/api/projects', projectRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/inquiries', inquiryRoutes);
 
 app.get('/', (req, res) => {
   res.send('Premium Portfolio API for STACKXXIO is running...');
