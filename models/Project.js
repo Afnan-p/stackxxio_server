@@ -7,7 +7,7 @@ const projectSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
+    default: ""
   },
   type: {
     type: String,
@@ -16,29 +16,31 @@ const projectSchema = new mongoose.Schema({
   },
   videoUrl: {
     type: String,
-    default: ''
+    default: null
   },
   thumbnail: {
     type: String, // Cover image for video projects
-    default: ''
+    default: null
   },
   mediaUrl: {
     type: String, // Uploaded file path
-    default: ''
+    default: null
   },
   images: {
     type: [String],
-    required: true,
+    default: []
   },
   techStack: {
     type: [String],
-    required: true,
+    default: []
   },
   liveLink: {
     type: String,
+    default: null
   },
   githubLink: {
     type: String,
+    default: null
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,

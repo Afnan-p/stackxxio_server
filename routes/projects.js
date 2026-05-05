@@ -8,25 +8,24 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 const router = express.Router();
 
-// Local Storage Config for Projects
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+// Cloudinary Storage Config
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'stackxxio/projects',
+    allowed_formats: ['jpg', 'png', 'webp', 'mp4', 'mov'],
+    resource_type: 'auto'
   }
 });
 
 const upload = multer({ 
   storage: storage,
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime', 'video/x-matroska'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, WEBP, and MP4 are allowed.'));
+      cb(new Error('Invalid file type. Only JPEG, PNG, WEBP, and MP4/MOV are allowed.'));
     }
   }
 });
@@ -53,6 +52,7 @@ router.get('/:id', async (req, res) => {
 });
 
 function getYoutubeThumbnail(url) {
+  if (!url) return "";
   const match = url.match(/(?:v=|youtu.be\/)([^&]+)/);
   return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : "";
 }
@@ -60,56 +60,82 @@ function getYoutubeThumbnail(url) {
 // Add new project (Protected) - Multiple images + media file
 router.post('/', auth, upload.fields([{ name: 'media', maxCount: 1 }, { name: 'images', maxCount: 5 }, { name: 'thumbnail', maxCount: 1 }]), async (req, res) => {
   try {
+    console.log("PROJECT CREATE BODY:", req.body);
+    console.log("PROJECT CREATE FILES:", req.files);
+
     const { title, description, techStack, liveLink, githubLink, category, type, videoUrl } = req.body;
     
-    // Validation for Video Projects
-    if (type === "video" && !videoUrl) {
-      return res.status(400).json({ message: "Video URL is required for video projects" });
+    // 1. Core Validation
+    if (!title || !category) {
+      return res.status(400).json({ message: "Title and Category are required" });
     }
 
-    let mediaUrl = req.body.mediaUrl || '';
-    let thumbnail = req.body.thumbnail || '';
-    const images = req.files && req.files['images'] ? req.files['images'].map(file => file.path.replace(/\\/g, '/')) : [];
+    // 2. Media Validation
+    const hasMediaFile = req.files && req.files['media'];
+    const hasMediaUrl = req.body.mediaUrl && req.body.mediaUrl.trim() !== "";
+    const hasVideoUrl = videoUrl && videoUrl.trim() !== "";
+
+    if (type === 'video' && !hasVideoUrl && !hasMediaFile) {
+      return res.status(400).json({ message: "Video projects require a Video URL or an uploaded video file" });
+    }
+
+    if (type === 'image' && !hasMediaUrl && !hasMediaFile) {
+      return res.status(400).json({ message: "Image projects require a Media URL or an uploaded image file" });
+    }
+
+    // 3. Asset Processing
+    let finalMediaUrl = hasMediaUrl ? req.body.mediaUrl : null;
+    let finalThumbnail = req.body.thumbnail && req.body.thumbnail.trim() !== "" ? req.body.thumbnail : null;
+    const images = req.files && req.files['images'] ? req.files['images'].map(file => file.secure_url || file.path) : [];
 
     if (req.files && req.files['media']) {
-      mediaUrl = req.files['media'][0].path.replace(/\\/g, '/');
+      finalMediaUrl = req.files['media'][0].secure_url || req.files['media'][0].path;
     }
 
     if (req.files && req.files['thumbnail']) {
-      thumbnail = req.files['thumbnail'][0].path.replace(/\\/g, '/');
+      finalThumbnail = req.files['thumbnail'][0].secure_url || req.files['thumbnail'][0].path;
     }
 
     // Auto-generate thumbnail for YouTube if empty
-    if (type === 'video' && !thumbnail && videoUrl) {
+    if (type === 'video' && (!finalThumbnail || finalThumbnail === "/fallback.jpg") && hasVideoUrl) {
       if (videoUrl.includes("youtube") || videoUrl.includes("youtu.be")) {
-        thumbnail = getYoutubeThumbnail(videoUrl);
+        finalThumbnail = getYoutubeThumbnail(videoUrl);
       }
+    }
+
+    // Default fallback thumbnail if still empty for video
+    if (type === 'video' && !finalThumbnail) {
+      finalThumbnail = "/fallback.jpg";
     }
 
     const project = new Project({
       title,
-      description,
+      description: description && description.trim() !== "" ? description : "Digital masterpiece for STACKXXIO portfolio.",
       type: type || 'image',
-      videoUrl: videoUrl || '',
-      thumbnail,
-      mediaUrl,
+      videoUrl: hasVideoUrl ? videoUrl : null,
+      thumbnail: finalThumbnail,
+      mediaUrl: finalMediaUrl,
       images,
-      techStack: typeof techStack === 'string' ? JSON.parse(techStack) : techStack,
-      liveLink,
-      githubLink,
+      techStack: techStack ? (typeof techStack === 'string' ? JSON.parse(techStack) : techStack) : [],
+      liveLink: liveLink && liveLink.trim() !== "" ? liveLink : null,
+      githubLink: githubLink && githubLink.trim() !== "" ? githubLink : null,
       category,
     });
 
     const newProject = await project.save();
     res.status(201).json(newProject);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("PROJECT CREATE ERROR:", error);
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Update project (Protected)
 router.put('/:id', auth, upload.fields([{ name: 'media', maxCount: 1 }, { name: 'images', maxCount: 5 }, { name: 'thumbnail', maxCount: 1 }]), async (req, res) => {
   try {
+    console.log("PROJECT UPDATE BODY:", req.body);
+    console.log("PROJECT UPDATE FILES:", req.files);
+
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
@@ -117,40 +143,52 @@ router.put('/:id', auth, upload.fields([{ name: 'media', maxCount: 1 }, { name: 
     
     const newType = type || project.type;
     const newVideoUrl = videoUrl !== undefined ? videoUrl : project.videoUrl;
+    const hasVideoUrl = newVideoUrl && newVideoUrl.trim() !== "";
 
-    // Validation for Video Projects
-    if (newType === "video" && !newVideoUrl) {
-      return res.status(400).json({ message: "Video URL is required for video projects" });
-    }
-
+    // Update fields with null fallback for empty strings
     if (title) project.title = title;
-    if (description) project.description = description;
+    if (description !== undefined) project.description = description && description.trim() !== "" ? description : null;
     if (techStack) project.techStack = typeof techStack === 'string' ? JSON.parse(techStack) : techStack;
-    if (liveLink) project.liveLink = liveLink;
-    if (githubLink) project.githubLink = githubLink;
+    if (liveLink !== undefined) project.liveLink = liveLink && liveLink.trim() !== "" ? liveLink : null;
+    if (githubLink !== undefined) project.githubLink = githubLink && githubLink.trim() !== "" ? githubLink : null;
     if (category) project.category = category;
     if (type) project.type = type;
-    if (videoUrl !== undefined) project.videoUrl = videoUrl;
-    if (mediaUrl !== undefined) project.mediaUrl = mediaUrl;
-    if (thumbnail !== undefined) project.thumbnail = thumbnail;
+    if (videoUrl !== undefined) project.videoUrl = videoUrl && videoUrl.trim() !== "" ? videoUrl : null;
     
+    // Handle specific media URL if provided as string
+    if (mediaUrl !== undefined) project.mediaUrl = mediaUrl && mediaUrl.trim() !== "" ? mediaUrl : null;
+    if (thumbnail !== undefined) project.thumbnail = thumbnail && thumbnail.trim() !== "" ? thumbnail : null;
+    
+    // Handle File Uploads
     if (req.files) {
-      if (req.files['media']) project.mediaUrl = req.files['media'][0].path.replace(/\\/g, '/');
-      if (req.files['thumbnail']) project.thumbnail = req.files['thumbnail'][0].path.replace(/\\/g, '/');
-      if (req.files['images']) project.images = req.files['images'].map(file => file.path.replace(/\\/g, '/'));
+      if (req.files['media']) {
+        project.mediaUrl = req.files['media'][0].secure_url || req.files['media'][0].path;
+      }
+      if (req.files['thumbnail']) {
+        project.thumbnail = req.files['thumbnail'][0].secure_url || req.files['thumbnail'][0].path;
+      }
+      if (req.files['images']) {
+        project.images = req.files['images'].map(file => file.secure_url || file.path);
+      }
     }
 
     // Auto-generate thumbnail for YouTube if empty
-    if (project.type === 'video' && !project.thumbnail && project.videoUrl) {
-      if (project.videoUrl.includes("youtube") || project.videoUrl.includes("youtu.be")) {
-        project.thumbnail = getYoutubeThumbnail(project.videoUrl);
+    if (project.type === 'video' && (!project.thumbnail || project.thumbnail === "/fallback.jpg") && hasVideoUrl) {
+      if (newVideoUrl.includes("youtube") || newVideoUrl.includes("youtu.be")) {
+        project.thumbnail = getYoutubeThumbnail(newVideoUrl);
       }
+    }
+
+    // Default fallback thumbnail if still empty for video
+    if (project.type === 'video' && !project.thumbnail) {
+      project.thumbnail = "/fallback.jpg";
     }
 
     const updatedProject = await project.save();
     res.json(updatedProject);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("PROJECT UPDATE ERROR:", error);
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -161,6 +199,7 @@ router.delete('/:id', auth, async (req, res) => {
     if (!project) return res.status(404).json({ message: 'Project not found' });
     res.json({ message: 'Project deleted' });
   } catch (error) {
+    console.error("PROJECT DELETE ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 });
