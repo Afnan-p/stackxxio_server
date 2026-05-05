@@ -40,11 +40,13 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 import projectRoutes from './routes/projects.js';
 import authRoutes from './routes/auth.js';
 import uploadRoutes from './routes/upload.js';
 import teamRoutes from './routes/team.js';
+import categoryRoutes from './routes/categoryRoutes.js';
 import inquiryRoutes from './routes/inquiryRoutes.js';
 import technologyRoutes from './routes/technologyRoutes.js';
 import serviceRoutes from './routes/services.js';
@@ -55,6 +57,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/tech', technologyRoutes);
 app.use('/api/services', serviceRoutes);

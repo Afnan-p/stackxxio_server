@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { PROJECT_CATEGORIES } from '../utils/constants.js';
 
 const projectSchema = new mongoose.Schema({
   title: {
@@ -23,6 +22,10 @@ const projectSchema = new mongoose.Schema({
     type: String, // Cover image for video projects
     default: ''
   },
+  mediaUrl: {
+    type: String, // Uploaded file path
+    default: ''
+  },
   images: {
     type: [String],
     required: true,
@@ -38,8 +41,8 @@ const projectSchema = new mongoose.Schema({
     type: String,
   },
   category: {
-    type: String,
-    enum: PROJECT_CATEGORIES,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
     required: true,
   },
 }, { timestamps: true });
