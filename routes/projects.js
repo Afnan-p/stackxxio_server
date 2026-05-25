@@ -33,8 +33,38 @@ const upload = multer({
 // Get all projects
 router.get('/', async (req, res) => {
   try {
-    const projects = await Project.find().populate('category').sort({ createdAt: -1 });
-    res.json(projects);
+    const { page, limit, category, paginate } = req.query;
+    let query = {};
+    
+    if (category && category !== 'All') {
+      query.category = category;
+    }
+
+    if (paginate === 'false') {
+      const projects = await Project.find(query).populate('category').sort({ createdAt: -1 }).lean();
+      return res.json(projects);
+    }
+
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 6;
+    const skip = (pageNum - 1) * limitNum;
+
+    const projects = await Project.find(query)
+      .populate('category', 'name')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+      
+    const total = await Project.countDocuments(query);
+    
+    res.json({
+      projects,
+      currentPage: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      totalProjects: total,
+      hasMore: skip + projects.length < total
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
