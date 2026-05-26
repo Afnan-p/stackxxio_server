@@ -36,9 +36,13 @@ router.get('/', async (req, res) => {
     const { page, limit, category, paginate } = req.query;
     let query = {};
     
+    console.log("GET /api/projects - Received category:", category);
+    
     if (category && category !== 'All') {
       query.category = category;
     }
+    
+    console.log("Constructed query:", query);
 
     if (paginate === 'false') {
       const projects = await Project.find(query).populate('category').sort({ createdAt: -1 }).lean();
