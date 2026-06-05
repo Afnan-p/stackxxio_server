@@ -33,16 +33,23 @@ const upload = multer({
 // Get all projects
 router.get('/', async (req, res) => {
   try {
-    const { page, limit, category, paginate } = req.query;
+    const { page, limit, category, paginate, search } = req.query;
     let query = {};
     
-    console.log("GET /api/projects - Received category:", category);
+    console.log("GET /api/projects - Received category:", category, "search:", search);
     
     if (category && category !== 'All') {
       query.category = category;
     }
     
-    console.log("Constructed query:", query);
+    if (search && search.trim() !== '') {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    console.log("Constructed query:", JSON.stringify(query));
 
     if (paginate === 'false') {
       const projects = await Project.find(query).populate('category').sort({ createdAt: -1 }).lean();
