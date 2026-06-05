@@ -13,22 +13,24 @@ export const getServices = async (req, res) => {
   }
 };
 
-// @route   POST api/services
-// @desc    Add new service
-// @access  Private
-export const addService = async (req, res) => {
-  const { title, description, icon, tag, order } = req.body;
+import mongoose from 'mongoose';
 
+// @route   GET api/services/:slug
+// @desc    Get single service by slug or id
+// @access  Public
+export const getServiceBySlug = async (req, res) => {
   try {
-    const newService = new Service({
-      title,
-      description,
-      icon,
-      tag,
-      order,
-    });
+    const param = req.params.slug;
+    let service = await Service.findOne({ slug: param });
+    
+    // If not found by slug, and it's a valid ObjectId, try finding by _id
+    if (!service && mongoose.Types.ObjectId.isValid(param)) {
+      service = await Service.findById(param);
+    }
 
-    const service = await newService.save();
+    if (!service) {
+      return res.status(404).json({ msg: 'Service not found' });
+    }
     res.json(service);
   } catch (err) {
     console.error(err.message);
@@ -36,26 +38,93 @@ export const addService = async (req, res) => {
   }
 };
 
+const generateSlug = (title) => {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+};
+
+// @route   POST api/services
+// @desc    Add new service
+// @access  Private
+export const addService = async (req, res) => {
+  try {
+    const { title, description, icon, tag, order, fullDescription, features, technologies, faqs, seoTitle, seoDescription } = req.body;
+    let slug = req.body.slug || generateSlug(title);
+    
+    // Check slug uniqueness
+    const existing = await Service.findOne({ slug });
+    if (existing) {
+      slug = `${slug}-${Date.now()}`;
+    }
+
+    let image = null;
+    if (req.file) {
+      image = req.file.secure_url || req.file.path;
+    }
+
+    const newService = new Service({
+      title,
+      description,
+      icon: icon || 'FaCode',
+      tag,
+      order: order || 0,
+      slug,
+      fullDescription,
+      features: features ? JSON.parse(features) : [],
+      technologies: technologies ? JSON.parse(technologies) : [],
+      faqs: faqs ? JSON.parse(faqs) : [],
+      seoTitle,
+      seoDescription,
+      image
+    });
+
+    const service = await newService.save();
+    res.json(service);
+  } catch (err) {
+    console.error("ADD SERVICE ERROR:", err);
+    res.status(500).json({ message: err.message || 'Server Error' });
+  }
+};
+
 // @route   PUT api/services/:id
 // @desc    Update service
 // @access  Private
 export const updateService = async (req, res) => {
-  const { title, description, icon, tag, order } = req.body;
-
   try {
     let service = await Service.findById(req.params.id);
     if (!service) return res.status(404).json({ msg: 'Service not found' });
 
+    const { title, description, icon, tag, order, fullDescription, features, technologies, faqs, seoTitle, seoDescription } = req.body;
+    
+    const updateData = {
+      title,
+      description,
+      icon,
+      tag,
+      order,
+      fullDescription,
+      seoTitle,
+      seoDescription
+    };
+
+    if (features) updateData.features = JSON.parse(features);
+    if (technologies) updateData.technologies = JSON.parse(technologies);
+    if (faqs) updateData.faqs = JSON.parse(faqs);
+    if (req.body.slug) updateData.slug = req.body.slug;
+
+    if (req.file) {
+      updateData.image = req.file.secure_url || req.file.path;
+    }
+
     service = await Service.findByIdAndUpdate(
       req.params.id,
-      { $set: { title, description, icon, tag, order } },
+      { $set: updateData },
       { new: true }
     );
 
     res.json(service);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    console.error("UPDATE SERVICE ERROR:", err);
+    res.status(500).json({ message: err.message || 'Server Error' });
   }
 };
 

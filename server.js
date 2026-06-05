@@ -52,6 +52,7 @@ import inquiryRoutes from './routes/inquiryRoutes.js';
 import technologyRoutes from './routes/technologyRoutes.js';
 import serviceRoutes from './routes/services.js';
 import footerRoutes from './routes/footerRoutes.js';
+import statsRoutes from './routes/stats.js';
 
 // Routes
 app.use('/api/projects', projectRoutes);
@@ -63,6 +64,7 @@ app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/tech', technologyRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/footer', footerRoutes);
+app.use('/api/stats', statsRoutes);
 
 app.get('/', (req, res) => {
   res.send('Premium Portfolio API for STACKXXIO is running...');

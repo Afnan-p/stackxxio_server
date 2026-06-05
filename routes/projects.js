@@ -14,7 +14,10 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'stackxxio/projects',
     allowed_formats: ['jpg', 'png', 'webp', 'mp4', 'mov'],
-    resource_type: 'auto'
+    resource_type: 'auto',
+    transformation: [
+      { fetch_format: "auto", quality: "auto" }
+    ]
   }
 });
 
@@ -52,7 +55,13 @@ router.get('/', async (req, res) => {
     console.log("Constructed query:", JSON.stringify(query));
 
     if (paginate === 'false') {
-      const projects = await Project.find(query).populate('category').sort({ createdAt: -1 }).lean();
+      const projects = await Project.find(query)
+        .populate('category')
+        .select('-videoUrl')
+        .sort({ createdAt: -1 })
+        .lean();
+      
+      res.set('Cache-Control', 'public, max-age=300'); // Cache for 5 mins
       return res.json(projects);
     }
 
@@ -62,6 +71,7 @@ router.get('/', async (req, res) => {
 
     const projects = await Project.find(query)
       .populate('category', 'name')
+      .select('-videoUrl')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum)
@@ -69,6 +79,7 @@ router.get('/', async (req, res) => {
       
     const total = await Project.countDocuments(query);
     
+    res.set('Cache-Control', 'public, max-age=300'); // Cache for 5 mins
     res.json({
       projects,
       currentPage: pageNum,

@@ -52,5 +52,7 @@ const projectSchema = new mongoose.Schema({
 // Add indexes for optimization
 projectSchema.index({ category: 1 });
 projectSchema.index({ createdAt: -1 });
+projectSchema.index({ type: 1 });
+projectSchema.index({ title: 1 });
 
 export default mongoose.model('Project', projectSchema);

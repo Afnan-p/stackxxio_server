@@ -11,12 +11,40 @@ const ServiceSchema = new mongoose.Schema({
   },
   icon: {
     type: String,
-    required: true,
+    required: false,
     default: 'FaCode',
   },
   tag: {
     type: String,
     default: '',
+  },
+  slug: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  fullDescription: {
+    type: String,
+  },
+  image: {
+    type: String,
+  },
+  features: [{
+    type: String
+  }],
+  technologies: [{
+    name: String,
+    icon: String
+  }],
+  faqs: [{
+    question: String,
+    answer: String
+  }],
+  seoTitle: {
+    type: String
+  },
+  seoDescription: {
+    type: String
   },
   order: {
     type: Number,
