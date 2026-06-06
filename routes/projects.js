@@ -13,11 +13,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'stackxxio/projects',
-    allowed_formats: ['jpg', 'png', 'webp', 'mp4', 'mov'],
     resource_type: 'auto',
-    transformation: [
-      { fetch_format: "auto", quality: "auto" }
-    ]
   }
 });
 
@@ -221,14 +217,29 @@ router.put('/:id', auth, upload.fields([{ name: 'media', maxCount: 1 }, { name: 
         project.thumbnail = thumbFile.secure_url || thumbFile.path;
       }
       if (req.files['images']) {
-        project.images = req.files['images'].map(file => file.secure_url || file.path);
+        const newImageUrls = req.files['images'].map(file => file.secure_url || file.path);
+        project.images = project.images ? [...project.images, ...newImageUrls] : newImageUrls;
       }
     }
 
-    // Handle manual URL updates
-    if (videoUrl !== undefined) project.videoUrl = videoUrl && videoUrl.trim() !== "" ? videoUrl : project.videoUrl;
-    if (mediaUrl !== undefined) project.mediaUrl = mediaUrl && mediaUrl.trim() !== "" ? mediaUrl : project.mediaUrl;
-    if (thumbnail !== undefined) project.thumbnail = thumbnail && thumbnail.trim() !== "" ? thumbnail : project.thumbnail;
+    // Handle existing gallery images (deletions)
+    if (req.body.existingImages !== undefined) {
+      try {
+        const existingImages = JSON.parse(req.body.existingImages);
+        const newImagesUploaded = req.files && req.files['images'] ? req.files['images'].map(file => file.secure_url || file.path) : [];
+        project.images = [...existingImages, ...newImagesUploaded];
+      } catch (e) {
+        console.error("Error parsing existingImages:", e);
+      }
+    }
+
+    // Handle manual URL updates ONLY if a file wasn't uploaded for that field
+    const hasNewMediaFile = req.files && req.files['media'];
+    const hasNewThumbFile = req.files && req.files['thumbnail'];
+
+    if (videoUrl !== undefined && !hasNewMediaFile) project.videoUrl = videoUrl && videoUrl.trim() !== "" ? videoUrl : project.videoUrl;
+    if (mediaUrl !== undefined && !hasNewMediaFile) project.mediaUrl = mediaUrl && mediaUrl.trim() !== "" ? mediaUrl : project.mediaUrl;
+    if (thumbnail !== undefined && !hasNewThumbFile) project.thumbnail = thumbnail && thumbnail.trim() !== "" ? thumbnail : project.thumbnail;
 
     // Auto-generate thumbnail for YouTube if empty
     if (project.type === 'video' && (!project.thumbnail || project.thumbnail === "/fallback.jpg") && hasVideoUrl) {
