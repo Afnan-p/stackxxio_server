@@ -43,3 +43,26 @@ export const deleteCategory = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// @route   PUT api/categories/:id
+// @desc    Update a category
+// @access  Private
+export const updateCategory = async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: 'Name is required' });
+
+    const slug = slugify(name, { lower: true });
+    
+    const category = await Category.findByIdAndUpdate(
+      req.params.id,
+      { name, slug },
+      { new: true, runValidators: true }
+    );
+
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.json(category);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
