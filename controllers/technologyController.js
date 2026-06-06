@@ -17,8 +17,8 @@ export const getTech = async (req, res) => {
 // @access  Private/Admin
 export const addTech = async (req, res) => {
   try {
-    const { name, icon, order } = req.body;
-    const tech = await Technology.create({ name, icon, order });
+    const { name, icon, category, order } = req.body;
+    const tech = await Technology.create({ name, icon, category, order });
     res.status(201).json(tech);
   } catch (err) {
     res.status(400).json({ message: err.message });

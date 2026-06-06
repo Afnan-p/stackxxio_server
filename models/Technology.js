@@ -10,6 +10,11 @@ const technologySchema = new mongoose.Schema({
     type: String,
     required: [true, 'Icon class or URL is required']
   },
+  category: {
+    type: String,
+    enum: ['frontend', 'backend', 'database', 'design', 'cloud'],
+    default: 'frontend'
+  },
   order: {
     type: Number,
     default: 0
