@@ -60,8 +60,6 @@ router.get('/', async (req, res) => {
         .select('-videoUrl')
         .sort({ createdAt: -1 })
         .lean();
-      
-      res.set('Cache-Control', 'public, max-age=300'); // Cache for 5 mins
       return res.json(projects);
     }
 
@@ -78,8 +76,6 @@ router.get('/', async (req, res) => {
       .lean();
       
     const total = await Project.countDocuments(query);
-    
-    res.set('Cache-Control', 'public, max-age=300'); // Cache for 5 mins
     res.json({
       projects,
       currentPage: pageNum,
