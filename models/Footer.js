@@ -1,6 +1,14 @@
 import mongoose from 'mongoose';
 
 const FooterSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    default: 'stackxxioweb@gmail.com',
+  },
+  phones: {
+    type: [String],
+    default: [],
+  },
   logoText: {
     type: String,
     default: 'STACKXXIO.',

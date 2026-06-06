@@ -22,7 +22,7 @@ export const getFooter = async (req, res) => {
 // @desc    Update footer data
 // @access  Private
 export const updateFooter = async (req, res) => {
-  const { logoText, tagline, twitter, linkedin, instagram, whatsapp, copyright } = req.body;
+  const { logoText, tagline, twitter, linkedin, instagram, whatsapp, copyright, email, phones } = req.body;
 
   try {
     let footer = await Footer.findOne();
@@ -30,14 +30,14 @@ export const updateFooter = async (req, res) => {
     if (footer) {
       footer = await Footer.findOneAndUpdate(
         {},
-        { $set: { logoText, tagline, twitter, linkedin, instagram, whatsapp, copyright, updatedAt: Date.now() } },
+        { $set: { logoText, tagline, twitter, linkedin, instagram, whatsapp, copyright, email, phones, updatedAt: Date.now() } },
         { new: true }
       );
       return res.json(footer);
     }
 
     // Fallback if somehow not created
-    footer = new Footer({ logoText, tagline, twitter, linkedin, instagram, whatsapp, copyright });
+    footer = new Footer({ logoText, tagline, twitter, linkedin, instagram, whatsapp, copyright, email, phones });
     await footer.save();
     res.json(footer);
   } catch (err) {

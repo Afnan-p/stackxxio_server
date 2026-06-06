@@ -63,6 +63,9 @@ export const updateCategory = async (req, res) => {
     if (!category) return res.status(404).json({ message: 'Category not found' });
     res.json(category);
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ message: 'A category with this name already exists.' });
+    }
     res.status(500).json({ message: err.message });
   }
 };
