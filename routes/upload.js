@@ -26,7 +26,7 @@ const upload = multer({ storage });
 const uploadToCloudinary = async (file, folderName) => {
   try {
     const result = await cloudinary.uploader.upload(file.path, {
-      folder: `stackxio/${folderName}`,
+      folder: `zynexta/${folderName}`,
     });
     // Delete local file after upload
     fs.unlinkSync(file.path);

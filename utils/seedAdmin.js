@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const seedAdmin = async () => {
-  const adminEmail = 'admin@stackxio.com';
+  const adminEmail = 'admin@zynexta.com';
   const adminPassword = 'admin123';
 
   try {

@@ -12,7 +12,7 @@ const router = express.Router();
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'stackxxio/projects',
+    folder: 'zynexta/projects',
     resource_type: 'auto',
   }
 });
@@ -157,7 +157,7 @@ router.post('/', auth, upload.fields([{ name: 'media', maxCount: 1 }, { name: 'i
 
     const project = new Project({
       title,
-      description: description && description.trim() !== "" ? description : "Digital masterpiece for STACKXXIO portfolio.",
+      description: description && description.trim() !== "" ? description : "Digital masterpiece for ZYNEXTA portfolio.",
       type: type || 'image',
       videoUrl: hasVideoUrl ? videoUrl : (type === 'video' ? finalMediaUrl : null), // Save uploaded video URL to videoUrl if it's a video project
       thumbnail: finalThumbnail,

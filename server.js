@@ -23,7 +23,7 @@ const allowedOrigins = [
   "http://localhost:5176",
   "http://localhost:4173",
   "https://stacxxio.vercel.app",
-  "https://stackxxio.vercel.app" // Just in case of spelling variations
+  "https://zynexta.vercel.app" // Just in case of spelling variations
 ];
 
 app.use(cors({
@@ -67,7 +67,7 @@ app.use('/api/footer', footerRoutes);
 app.use('/api/stats', statsRoutes);
 
 app.get('/', (req, res) => {
-  res.send('Premium Portfolio API for STACKXXIO is running...');
+  res.send('Premium Portfolio API for ZYNEXTA is running...');
 });
 
 // Database Connection

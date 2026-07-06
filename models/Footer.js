@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const FooterSchema = new mongoose.Schema({
   email: {
     type: String,
-    default: 'stackxxioweb@gmail.com',
+    default: 'zynextaweb@gmail.com',
   },
   phones: {
     type: [String],
@@ -11,7 +11,7 @@ const FooterSchema = new mongoose.Schema({
   },
   logoText: {
     type: String,
-    default: 'STACKXXIO.',
+    default: 'ZYNEXTA.',
   },
   tagline: {
     type: String,
@@ -35,7 +35,7 @@ const FooterSchema = new mongoose.Schema({
   },
   copyright: {
     type: String,
-    default: '© 2025 STACKXXIO STUDIO. ALL RIGHTS RESERVED.',
+    default: '© 2025 ZYNEXTA STUDIO. ALL RIGHTS RESERVED.',
   },
   updatedAt: {
     type: Date,

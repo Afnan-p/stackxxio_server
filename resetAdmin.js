@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const resetAdmin = async () => {
-  const newEmail = 'admin@stackxio.com';
+  const newEmail = 'admin@zynexta.com';
   const newPassword = 'admin_reset_2024'; // User should change this after login
 
   try {

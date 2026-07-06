@@ -16,7 +16,7 @@ const router = express.Router();
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'stackxxio/services',
+    folder: 'zynexta/services',
     allowed_formats: ['jpg', 'png', 'webp'],
   }
 });
