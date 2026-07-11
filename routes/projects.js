@@ -14,6 +14,8 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'zynexta/projects',
     resource_type: 'auto',
+    format: 'webp',
+    transformation: [{ quality: 'auto', fetch_format: 'auto' }]
   }
 });
 

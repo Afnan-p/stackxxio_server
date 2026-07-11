@@ -17,6 +17,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'zynexta/team',
+    format: 'webp',
     allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
     transformation: [{ quality: 'auto', fetch_format: 'auto' }]
   },

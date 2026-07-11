@@ -18,6 +18,8 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'zynexta/services',
     allowed_formats: ['jpg', 'png', 'webp'],
+    format: 'webp',
+    transformation: [{ quality: 'auto', fetch_format: 'auto' }]
   }
 });
 
