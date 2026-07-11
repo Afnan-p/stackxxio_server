@@ -22,6 +22,7 @@ const allowedOrigins = [
   "http://localhost:5175",
   "http://localhost:5176",
   "http://localhost:4173",
+  "https://zynexta.com",
   "https://stacxxio.vercel.app",
   "https://zynexta.vercel.app" // Just in case of spelling variations
 ];

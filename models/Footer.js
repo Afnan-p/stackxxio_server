@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const FooterSchema = new mongoose.Schema({
   email: {
     type: String,
-    default: 'zynextaweb@gmail.com',
+    default: 'zynexta@gmail.com',
   },
   phones: {
     type: [String],
